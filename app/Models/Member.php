@@ -9,44 +9,31 @@ class Member extends Model
 {
     protected $fillable = [
         'nama', 'angkatan', 'tanggal_lahir', 'no_ortu', 'no_wa',
-        'alamat_kos', 'alamat_ortu', 'is_aktif', 'is_jember', 'is_pengurus'
+        'alamat_kos', 'alamat_ortu', 'is_aktif', 'is_jember',
+        'is_pengurus', 'jabatan_terakhir', 'periode_pengurus'
     ];
 
-    // Accessor: Membersihkan Tanggal Lahir (Handle "Jakarta, 8 Juni 2004")
-    public function getFormattedBirthDateAttribute()
-    {
-        $data = $this->tanggal_lahir;
-        if (empty($data)) return '-';
-        try {
-            if (str_contains($data, ',')) {
-                $parts = explode(',', $data);
-                $data = trim(end($parts));
-            }
-            $bulanIndo = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-            $bulanEng  = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            $cleanDate = str_ireplace($bulanIndo, $bulanEng, $data);
-            return Carbon::parse($cleanDate)->translatedFormat('d F Y');
-        } catch (\Exception $e) {
-            return $this->tanggal_lahir;
-        }
-    }
-
-    // Accessor: Fix WhatsApp (Otomatis +62)
+    // Accessor Link WhatsApp Otomatis
     public function getWaUrlAttribute()
     {
-        $nomor = preg_replace('/[^0-9]/', '', $this->no_wa);
+        $nomor = $this->no_wa ?? '';
+        $nama = $this->nama ?? 'Anggota';
+        if (empty($nomor)) return "#";
+        $nomor = preg_replace('/[^0-9]/', '', $nomor);
         if (strpos($nomor, '0') === 0) {
             $nomor = '62' . substr($nomor, 1);
         } elseif (strpos($nomor, '8') === 0) {
             $nomor = '62' . $nomor;
         }
-        return "https://api.whatsapp.com/send?phone=" . $nomor . "&text=Halo%20" . urlencode($this->nama);
+        return "https://api.whatsapp.com/send?phone=" . $nomor . "&text=Halo%20" . urlencode($nama);
     }
 
+    // Cek Ulang Tahun
     public function isBirthdayToday()
     {
         try {
-            $data = $this->tanggal_lahir;
+            $data = $this->tanggal_lahir ?? '';
+            if (empty($data)) return false;
             if (str_contains($data, ',')) { $data = trim(explode(',', $data)[1]); }
             $bulanIndo = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
             $bulanEng  = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
