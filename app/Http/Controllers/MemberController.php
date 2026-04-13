@@ -14,82 +14,54 @@ class MemberController extends Controller
     /**
      * Tampilkan Daftar Database & Notif Ultah
      */
-    public function index()
-{
-    $members = Member::all();
-    $today = Carbon::now()->format('m-d');
+    public function index(Request $request) {
+    $query = Member::query();
 
-    // Ambil anggota yang bulan dan harinya sama dengan hari ini
-    $ultahHariIni = Member::whereRaw("DATE_FORMAT(tanggal_lahir, '%m-%d') = ?", [$today])->get();
+    // Fitur Filter
+    if ($request->angkatan) $query->where('angkatan', $request->angkatan);
+    if ($request->status == 'aktif') $query->where('is_aktif', 1);
 
-    return view('members.index', compact('members', 'ultahHariIni'));
+    // Fitur Urutan (Sorting)
+    $sort = $request->get('sort', 'nama'); // Default urut nama
+    $direction = $request->get('direction', 'asc');
+    $query->orderBy($sort, $direction);
+
+    $members = $query->get();
+
+    // Data Statistik Dashboard
+    $stats = [
+        'total' => Member::count(),
+        'aktif' => Member::where('is_aktif', 1)->count(),
+        'jember' => Member::where('is_jember', 1)->count(),
+        // Fitur Ultah Terdeteksi di Sini
+        'ultah' => Member::all()->filter->isBirthdayToday()->count()
+    ];
+
+    $listAngkatan = Member::select('angkatan')->distinct()->orderBy('angkatan', 'desc')->get();
+
+    return view('members.index', compact('members', 'stats', 'listAngkatan'));
 }
 
-    /**
-     * Fitur Rincian
-     */
-    public function show($id)
-    {
-        $member = Member::findOrFail($id);
+    public function show(Member $member) {
         return view('members.show', compact('member'));
     }
 
-    /**
-     * Fitur Tambah Data (Create)
-     */
-    public function store(Request $request)
+    public function create()
     {
-        $request->validate([
-            'nama' => 'required',
-            'angkatan' => 'required',
-            'tanggal_lahir' => 'required|date',
-            'no_wa' => 'required',
-        ]);
-
-        Member::create($request->all());
-
-        return redirect()->route('members.index')->with('success', 'Data Anggota berhasil ditambahkan!');
+    return view('members.create');
     }
 
-    /**
-     * Fitur Edit Data (Update)
-     */
-    public function update(Request $request, $id)
-    {
-        $member = Member::findOrFail($id);
-        $member->update($request->all());
-
-        return redirect()->route('members.index')->with('success', 'Data berhasil diperbarui!');
+    public function edit(Member $member) {
+        return view('members.edit', compact('member'));
     }
 
-    /**
-     * Fitur Hapus Data (Delete)
-     */
-    public function destroy($id)
-    {
-        $member = Member::findOrFail($id);
+    public function update(Request $request, Member $member) {
+        $member->update($request->all()); // Simpel untuk update kategori & data
+        return redirect()->route('members.index')->with('success', 'Data diperbarui!');
+    }
+
+    public function destroy(Member $member) {
         $member->delete();
-
-        return redirect()->route('members.index')->with('success', 'Data berhasil dihapus!');
+        return back()->with('success', 'Anggota dihapus!');
     }
-
-    /**
-     * Fitur Import dari Excel
-     */
-    public function import(Request $request)
-{
-    $request->validate([
-        'file_excel' => 'required'
-    ]);
-
-    try {
-        // Tambahkan \Maatwebsite\Excel\Excel::CSV untuk memaksa pembacaan CSV
-        Excel::import(new MemberImport, $request->file('file_excel'), null, \Maatwebsite\Excel\Excel::CSV);
-
-        return redirect()->route('members.index')->with('success', 'Data berhasil diimport!');
-    } catch (\Exception $e) {
-        // Tampilkan error biar kita tau masalahnya apa kalau gagal
-        return redirect()->route('members.index')->with('error', 'Gagal: ' . $e->getMessage());
-    }
-}
 }
