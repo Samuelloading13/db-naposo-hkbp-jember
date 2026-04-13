@@ -39,6 +39,42 @@
                                 <label class="form-check-label">Pernah Jadi Pengurus</label>
                             </div>
                         </div>
+                        <div class="mt-4 p-3 rounded-4 border" style="background-color: #f8f9fa;">
+                        <label class="d-block mb-3 fw-bold text-primary">
+                            <i class="fas fa-user-shield me-2"></i>Status Kepengurusan
+                        </label>
+
+                        <div class="form-check form-switch mb-3">
+                            <input type="hidden" name="is_pengurus" value="0">
+                            <input class="form-check-input" type="checkbox" id="checkPengurus" name="is_pengurus" value="1" {{ $member->is_pengurus ? 'checked' : '' }} onchange="togglePengurus()">
+                            <label class="form-check-label" for="checkPengurus">Pernah Jadi Pengurus?</label>
+                        </div>
+
+                        <div id="formJabatan" style="display: {{ $member->is_pengurus ? 'block' : 'none' }}">
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label class="small text-muted">Jabatan Terakhir</label>
+                                    <input type="text" name="jabatan_terakhir" class="form-control form-control-sm" value="{{ $member->jabatan_terakhir }}" placeholder="Contoh: Ketua, Sekretaris, dll">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="small text-muted">Periode (Tahun)</label>
+                                    <input type="text" name="periode_pengurus" class="form-control form-control-sm" value="{{ $member->periode_pengurus }}" placeholder="Contoh: 2024-2026">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        function togglePengurus() {
+                            var checkBox = document.getElementById("checkPengurus");
+                            var textForm = document.getElementById("formJabatan");
+                            if (checkBox.checked == true){
+                                textForm.style.display = "block";
+                            } else {
+                                textForm.style.display = "none";
+                            }
+                        }
+                    </script>
 
                         <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                         <a href="{{ route('members.index') }}" class="btn btn-secondary">Batal</a>

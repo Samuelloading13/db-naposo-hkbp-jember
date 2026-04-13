@@ -1,59 +1,41 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail: {{ $member->nama }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { background-color: #f4f7f6; padding-top: 50px; }
-        .card-detail { border-radius: 20px; border: none; overflow: hidden; }
-        .header-detail { background: #2c3e50; color: white; padding: 30px; }
-    </style>
-</head>
-<body>
+@extends('layouts.app')
 
-<div class="container mb-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card card-detail shadow">
-                <div class="header-detail text-center">
-                    <i class="fas fa-user-circle fa-4x mb-3"></i>
-                    <h2 class="mb-0">{{ $member->nama }}</h2>
-                    <span class="badge bg-info mt-2">Angkatan {{ $member->angkatan }}</span>
+@section('content')
+<div class="container mt-4">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white p-4 border-0">
+            <h4 class="fw-bold text-primary mb-0">{{ $member->nama }}</h4>
+            <span class="badge bg-light text-dark">Angkatan {{ $member->angkatan }}</span>
+        </div>
+        <div class="card-body p-4 pt-0">
+            <div class="row g-4">
+                <div class="col-md-6 border-end">
+                    <h6 class="text-muted small mb-1">Tanggal Lahir</h6>
+                    <p class="fw-bold">{{ $member->formatted_birth_date }}</p>
+
+                    <h6 class="text-muted small mb-1 mt-3">Nomor WhatsApp</h6>
+                    <p class="fw-bold">{{ $member->no_wa }}</p>
                 </div>
-                <div class="card-body p-4">
-                    <div class="row g-4">
-                        <div class="col-md-6 border-end">
-                            <h6 class="text-muted"><i class="fas fa-birthday-cake me-2"></i>Tanggal Lahir</h6>
-                            <p class="fw-bold">{{ \Carbon\Carbon::parse($member->tanggal_lahir)->format('d F Y') }}</p>
-
-                            <h6 class="text-muted mt-4"><i class="fab fa-whatsapp me-2"></i>No. WhatsApp</h6>
-                            <p class="fw-bold">{{ $member->no_wa }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="text-muted"><i class="fas fa-home me-2"></i>Alamat Kos (Jember)</h6>
-                            <p class="fw-bold">{{ $member->alamat_kos ?? '-' }}</p>
-
-                            <h6 class="text-muted mt-4"><i class="fas fa-map-marked-alt me-2"></i>Alamat Orang Tua</h6>
-                            <p class="fw-bold">{{ $member->alamat_ortu ?? '-' }}</p>
-                        </div>
-                        <div class="col-12 mt-4 bg-light p-3 rounded">
-                            <h6 class="text-muted"><i class="fas fa-phone-alt me-2"></i>Kontak Darurat (Orang Tua)</h6>
-                            <p class="mb-0 fw-bold">{{ $member->no_ortu ?? '-' }}</p>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-between mt-5">
-                        <a href="{{ route('members.index') }}" class="btn btn-secondary px-4"><i class="fas fa-arrow-left me-2"></i> Kembali</a>
-                        <a href="https://wa.me/{{ $member->no_wa }}" target="_blank" class="btn btn-success px-4"><i class="fab fa-whatsapp me-2"></i> Hubungi WA</a>
-                    </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted small mb-1">Alamat di Jember</h6>
+                    <p class="fw-bold">{{ $member->alamat_kos ?? '-' }}</p>
                 </div>
             </div>
+            <hr>
+            <a href="{{ $member->wa_url }}" target="_blank" class="btn btn-success w-100 fw-bold rounded-pill">
+                <i class="fab fa-whatsapp me-2"></i> Hubungi Sekarang
+            </a>
+            <a href="{{ route('members.index') }}" class="btn btn-light w-100 mt-2 rounded-pill">Kembali</a>
+        </div>
+        <div class="mt-4 p-3 rounded-4" style="background-color: #f0f7ff; border-left: 5px solid #003366;">
+            <h6 class="fw-bold text-primary"><i class="fas fa-history me-2"></i>Histori Kepengurusan</h6>
+            @if($member->is_pengurus)
+                <p class="mb-1"><strong>Jabatan:</strong> {{ $member->jabatan_terakhir ?? 'Anggota Pengurus' }}</p>
+                <p class="mb-0 text-muted small"><strong>Periode:</strong> {{ $member->periode_pengurus ?? '-' }}</p>
+            @else
+                <p class="text-muted mb-0 small italic">Belum pernah menjadi pengurus.</p>
+            @endif
         </div>
     </div>
 </div>
-
-</body>
-</html>
+@endsection
