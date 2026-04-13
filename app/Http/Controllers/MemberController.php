@@ -77,16 +77,19 @@ class MemberController extends Controller
      * Fitur Import dari Excel
      */
     public function import(Request $request)
-    {
-        $request->validate([
-            'file_excel' => 'required|mimes:xlsx,xls,csv'
-        ]);
+{
+    $request->validate([
+        'file_excel' => 'required'
+    ]);
 
-        try {
-            Excel::import(new MemberImport, $request->file('file_excel'));
-            return redirect()->route('members.index')->with('success', 'Data Excel berhasil diimport!');
-        } catch (\Exception $e) {
-            return redirect()->route('members.index')->with('error', 'Gagal import: ' . $e->getMessage());
-        }
+    try {
+        // Tambahkan \Maatwebsite\Excel\Excel::CSV untuk memaksa pembacaan CSV
+        Excel::import(new MemberImport, $request->file('file_excel'), null, \Maatwebsite\Excel\Excel::CSV);
+
+        return redirect()->route('members.index')->with('success', 'Data berhasil diimport!');
+    } catch (\Exception $e) {
+        // Tampilkan error biar kita tau masalahnya apa kalau gagal
+        return redirect()->route('members.index')->with('error', 'Gagal: ' . $e->getMessage());
     }
+}
 }
