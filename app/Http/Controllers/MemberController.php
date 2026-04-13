@@ -15,16 +15,15 @@ class MemberController extends Controller
      * Tampilkan Daftar Database & Notif Ultah
      */
     public function index()
-    {
-        // Ambil semua data anggota
-        $members = Member::all();
+{
+    $members = Member::all();
+    $today = Carbon::now()->format('m-d');
 
-        // Logika cek siapa yang ulang tahun HARI INI
-        $today = Carbon::now()->format('m-d');
-        $ultahHariIni = Member::whereRaw("DATE_FORMAT(tanggal_lahir, '%m-%d') = ?", [$today])->get();
+    // Ambil anggota yang bulan dan harinya sama dengan hari ini
+    $ultahHariIni = Member::whereRaw("DATE_FORMAT(tanggal_lahir, '%m-%d') = ?", [$today])->get();
 
-        return view('members.index', compact('members', 'ultahHariIni'));
-    }
+    return view('members.index', compact('members', 'ultahHariIni'));
+}
 
     /**
      * Fitur Rincian

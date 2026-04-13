@@ -9,26 +9,23 @@ use Log;
 
 class MemberImport implements ToModel
 {
-    public function model(array $row)
-    {
-        // 1. Skip jika baris kosong atau ini adalah baris header
-        if (!isset($row[0]) || $row[0] == 'Nama') {
-            return null;
-        }
-
-        // 2. Mapping kolom berdasarkan file "data naposo.xlsx" kamu:
-        // [0] Nama, [1] Alamat Asal, [2] Angkatan, [3] Tgl Lahir, [4] No WA, [5] Status
-
-        return new Member([
-            'nama'          => $row[0],
-            'angkatan'      => $row[2] ?? '2000', // Default jika kosong
-            'tanggal_lahir' => $this->parseDate($row[3]), // Fungsi khusus di bawah
-            'no_wa'         => $row[4] ?? '-',
-            'no_ortu'       => '-', // Tidak ada di excel, kita isi strip dulu
-            'alamat_kos'    => '-', // Tidak ada di excel, kita isi strip dulu
-            'alamat_ortu'   => $row[1] ?? '-',
-        ]);
+   public function model(array $row)
+{
+    // Skip baris header jika kolom pertama isinya tulisan "Nama"
+    if (!isset($row[0]) || $row[0] == 'Nama' || empty($row[0])) {
+        return null;
     }
+
+    return new Member([
+        'nama'          => $row[0],
+        'alamat_ortu'   => $row[1] ?? '-', // Alamat Asal
+        'angkatan'      => $row[2] ?? '2000',
+        'tanggal_lahir' => $this->parseDate($row[3]), // Kolom ke-4 adalah Tanggal
+        'no_wa'         => $row[4] ?? '-',
+        'no_ortu'       => '-',
+        'alamat_kos'    => '-',
+    ]);
+}
 
     private function parseDate($date)
     {
